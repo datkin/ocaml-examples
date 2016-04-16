@@ -1,4 +1,5 @@
 _build/
 *.byte
 *.native
+*.swp
 web/client/test.js

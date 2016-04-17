@@ -1,5 +1,7 @@
 #!/bin/bash
 
+# Here's a build script which does most of the work "manually".
+
 opam switch 4.02.3 && eval $(opam config env)
 
 stubs=embedded_compiler_stubs
@@ -36,6 +38,5 @@ ocamlbuild \
   -tag 'ppx(ppx-jane -as-ppx)' \
   -tag debug \
   -tag thread \
-  -lflag -ccopt \
-  -lflag ${stubs}.o \
+  -lflag -ccopt,${stubs}.o \
   main.native

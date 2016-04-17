@@ -9,7 +9,7 @@ module Plugin = Ocaml_dynloader.Make (struct
   let univ_constr_repr = "Plugin_intf.univ_constr"
 end)
 
-let config = Plugin_cache.Config.create ~dir:"/tmp" ()
+let config ~dir = Plugin_cache.Config.create ~dir ()
 
 (* If we specify this, start up should be faster on additional runs. *)
 let persistent_archive_dirpath = "/tmp/plugin-example-archive"
@@ -20,12 +20,14 @@ let command =
     Command.Spec.(
       empty
       +> flag "debug" no_arg ~doc:" Enable verbose shell output"
+      +> flag "cache" (optional string) ~doc:"dir Where to cache compiled plugins"
       +> anon ("plugin.ml" %: file)
     )
-    (fun debug file () ->
+    (fun debug cache file () ->
       if debug then
         Ocaml_plugin.Shell.set_defaults ~verbose:true ~echo:true ();
-      Ocaml_compiler.create ~use_cache:config ~persistent_archive_dirpath ()
+      let use_cache = Option.map cache ~f:(fun dir -> config ~dir) in
+      Ocaml_compiler.create ?use_cache ~persistent_archive_dirpath ()
       >>=? fun (`this_needs_manual_cleaning_after ocaml_compiler) ->
       let loader = Ocaml_compiler.loader ocaml_compiler in
       Deferred.forever None (fun prev_md5 ->
@@ -50,7 +52,6 @@ let command =
         Signal.handle Signal.terminating ~f:(fun (_ : Signal.t) ->
           Ivar.fill ivar ()))
       >>= fun () ->
-      return (Ok ())
-      (*Ocaml_compiler.clean ocaml_compiler*))
+      Ocaml_compiler.clean ocaml_compiler)
 
 let () = Command.run command

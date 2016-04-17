@@ -1,1 +1,1 @@
-let message = "Hi"
+let message = "Bye"

@@ -6,7 +6,7 @@ module Plugin = Ocaml_dynloader.Make (struct
   type t = (module Plugin_intf.S)
   let t_repr = "Plugin_intf.S"
   let univ_constr = Plugin_intf.univ_constr
-  let univ_constr_repr = "Plugin.univ_constr"
+  let univ_constr_repr = "Plugin_intf.univ_constr"
 end)
 
 let config = Plugin_cache.Config.create ~dir:"/tmp" ()
@@ -47,6 +47,7 @@ let command =
         Signal.handle Signal.terminating ~f:(fun (_ : Signal.t) ->
           Ivar.fill ivar ()))
       >>= fun () ->
-      Ocaml_compiler.clean ocaml_compiler)
+      return (Ok ())
+      (*Ocaml_compiler.clean ocaml_compiler*))
 
 let () = Command.run command

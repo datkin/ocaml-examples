@@ -19,9 +19,12 @@ let command =
     ~summary:"Continually load the plugin, print the message as it updates"
     Command.Spec.(
       empty
+      +> flag "debug" no_arg ~doc:" Enable verbose shell output"
       +> anon ("plugin.ml" %: file)
     )
-    (fun file () ->
+    (fun debug file () ->
+      if debug then
+        Ocaml_plugin.Shell.set_defaults ~verbose:true ~echo:true ();
       Ocaml_compiler.create ~use_cache:config ~persistent_archive_dirpath ()
       >>=? fun (`this_needs_manual_cleaning_after ocaml_compiler) ->
       let loader = Ocaml_compiler.loader ocaml_compiler in

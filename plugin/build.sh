@@ -6,15 +6,21 @@ stubs=embedded_compiler_stubs
 
 rm ${stubs}.c
 
+ocamlbuild -clean
+
 ocamlbuild \
   -pkg ocaml_plugin \
   plugin_intf.cmi
 
 ocaml-embed-compiler \
   -cc $(which ocamlopt.opt) \
+  -ppx $(which ppx-jane) \
   _build/plugin_intf.cmi \
   $(ocamlfind query ocaml_plugin)/ocaml_plugin.cmi \
+  $(ocamlfind query sexplib)/sexplib.cmi \
+  $(ocamlfind query core)/core.cmi \
   $(opam config var lib)/ocaml/pervasives.cmi \
+  $(opam config var lib)/ocaml/camlinternalFormatBasics.cmi \
   -o ${stubs}.c
 
 gcc \

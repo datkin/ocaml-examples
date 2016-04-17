@@ -1,5 +1,7 @@
 #!/bin/bash
 
+opam swithc 4.02.3 && eval $(opam config env)
+
 stubs=embedded_compiler_stubs
 
 rm ${stubs}.c

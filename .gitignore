@@ -3,3 +3,4 @@ _build/
 *.native
 *.swp
 web/client/test.js
+embedded_compiler_stubs.c

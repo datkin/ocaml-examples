@@ -32,7 +32,7 @@ let client =
         Core.Std.printf "connected\n%!";
         Deferred.any [
           Pipe.iter_without_pushback (Reader.pipe reader) ~f:(printf "got: %s\n%!");
-          Pipe.iter_without_pushback (Reader.pipe (force Reader.stdin)) ~f:(Writer.write writer);
+          Pipe.iter_without_pushback (Reader.lines (force Reader.stdin)) ~f:(Writer.write writer);
         ]))
 
 let () =

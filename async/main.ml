@@ -22,19 +22,21 @@ let server =
     Command.Spec.(empty +> anon ("port" %: int))
     (fun port () ->
       let bus : (_, read_write) Bus.t =
-        Bus.create [%here] Arity3 ~allow_subscription_after_first_write:true ~on_callback_raise:ignore
+        Bus.create [%here] Arity4 ~allow_subscription_after_first_write:true ~on_callback_raise:ignore
       in
       let bus_ro = Bus.read_only bus in
       Tcp.Server.create (Tcp.on_port port) (fun addr reader writer ->
         let file_descr = Writer.fd writer |> Fd.file_descr_exn in
         Core.Std.printf !"%{Socket.Address.Inet} connected\n%!" addr;
         let subscriber =
-          Bus.subscribe_exn bus_ro [%here] ~f:(fun buf (`Pos pos) (`Len len) ->
-            let written = Bigstring.write file_descr buf ~pos ~len in
-            if written < len
-            then begin
-              Reader.close reader;
-              Core.Std.printf !"Booting %{Socket.Address.Inet}\n%!" addr;
+          Bus.subscribe_exn bus_ro [%here] ~f:(fun addr' buf (`Pos pos) (`Len len) ->
+            if addr' <> addr then begin
+              let written = Bigstring.write file_descr buf ~pos ~len in
+              if written < len
+              then begin
+                Reader.close reader;
+                Core.Std.printf !"Booting %{Socket.Address.Inet}\n%!" addr;
+              end
             end)
         in
         Reader.read_one_chunk_at_a_time
@@ -50,7 +52,7 @@ let server =
               if size > len - header_length
               then return (`Consumed (0, `Need (header_length + size)))
               else begin
-                Bus.write bus buf (`Pos pos) (`Len (header_length + size));
+                Bus.write bus addr buf (`Pos pos) (`Len (header_length + size));
                 return (`Consumed (header_length + size, `Need_unknown))
               end
             end)

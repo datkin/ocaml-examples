@@ -26,10 +26,16 @@ let server =
       in
       let bus_ro = Bus.read_only bus in
       Tcp.Server.create (Tcp.on_port port) (fun addr reader writer ->
+        let file_descr = Writer.fd writer |> Fd.file_descr_exn in
         Core.Std.printf !"%{Socket.Address.Inet} connected\n%!" addr;
         let subscriber =
           Bus.subscribe_exn bus_ro [%here] ~f:(fun buf (`Pos pos) (`Len len) ->
-            Writer.write_bigstring writer ~pos ~len buf)
+            let written = Bigstring.write file_descr buf ~pos ~len in
+            if written < len
+            then begin
+              Reader.close reader;
+              Core.Std.printf !"Booting %{Socket.Address.Inet}\n%!" addr;
+            end)
         in
         Reader.read_one_chunk_at_a_time
           reader

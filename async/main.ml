@@ -16,6 +16,25 @@ let iter_messages reader ~f =
     ~using:(Unpack_buffer.create_bin_prot bin_reader_message)
     ~f
 
+let rec available_bytes buf ~pos ~len =
+  let header_length = Bin_prot.Utils.size_header_length in
+  if len < header_length
+  then (0, `Need header_length)
+  else begin
+    let pos_ref = ref pos in
+    let size = Bin_prot.Utils.bin_read_size_header buf ~pos_ref in
+    assert (!pos_ref = pos + header_length);
+    if size <= len - header_length
+    then
+      let pos = pos + header_length + size in
+      let len = len - header_length - size in
+      let (consumed, need) = available_bytes buf ~pos ~len in
+      (consumed + header_length + size, need)
+    else
+      (0, `Need (header_length + size))
+  end
+;;
+
 let server =
   Command.async
     ~summary:"The server"
@@ -42,20 +61,10 @@ let server =
         Reader.read_one_chunk_at_a_time
           reader
           ~handle_chunk:(fun buf ~pos ~len ->
-            let header_length = Bin_prot.Utils.size_header_length in
-            if len < header_length
-            then return (`Consumed (0, `Need header_length))
-            else begin
-              let pos_ref = ref pos in
-              let size = Bin_prot.Utils.bin_read_size_header buf ~pos_ref in
-              assert (!pos_ref = pos + header_length);
-              if size > len - header_length
-              then return (`Consumed (0, `Need (header_length + size)))
-              else begin
-                Bus.write bus addr buf (`Pos pos) (`Len (header_length + size));
-                return (`Consumed (header_length + size, `Need_unknown))
-              end
-            end)
+            let (bytes, need) = available_bytes buf ~pos ~len in
+            Bus.write bus addr buf (`Pos pos) (`Len bytes);
+            return (`Consumed (bytes, need))
+          )
         >>= fun _ ->
         Bus.unsubscribe bus_ro subscriber;
         Core.Std.printf !"%{Socket.Address.Inet} disconnected\n%!" addr;

@@ -2,5 +2,6 @@ _build/
 *.byte
 *.native
 *.swp
+*.corrected
 web/client/test.js
 embedded_compiler_stubs.c

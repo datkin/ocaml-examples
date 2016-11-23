@@ -1,6 +1,6 @@
 #!/bin/bash
 
-opam switch 4.02.3 && eval $(opam config env)
+opam switch 4.03.0 && eval $(opam config env)
 
 ocamlbuild \
   -use-ocamlfind \

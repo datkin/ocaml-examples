@@ -1,0 +1,20 @@
+  (library (
+     (name example_lib)
+     ;(public_name example_)
+     (libraries (
+       core
+       ppx_inline_test
+       ppx_expect.evaluator
+       ppx_expect
+     ))
+
+     (preprocess (command "ppx-jane -inline-test-lib x"))
+
+     ;(preprocess (pps (ppx_jane -inline-test-lib core)))
+     ;(preprocess (pps (ppx_jane)))
+
+    ;(preprocessor_deps (
+      ;ppx_inline_test.libname
+      ;ppx_expect
+    ;))
+  ))

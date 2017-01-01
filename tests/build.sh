@@ -2,14 +2,16 @@
 
 set -o errexit
 
+  #-verbose 1 \
 ocamlbuild \
   -use-ocamlfind \
   -pkg core,ppx_expect.evaluator \
   -tag thread \
   -tag 'ppx(ppx-jane -as-ppx -inline-test-lib example_lib)' \
-  -cflags -w,+a-40-42-44 \
+  -cflags -verbose,-w,+a-40-42-44 \
+  -lflags -verbose \
   example_lib.cmxa \
-  inline_test_runner.native
+  bin/inline_test_runner.native
 
 ./inline_test_runner.native \
   inline-test-runner \

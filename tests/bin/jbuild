@@ -1,19 +1,13 @@
-  (executables (
-    (names (inline_test_runner))
-    (libraries (
-      core
-      example_lib
-      ;ppx_inline_test
-      ;ppx_expect
-      ;ppx_expect.evaluator
-    ))
-    ;(preprocess (pps (ppx_jane -inline-test-lib example_lib)))
-    ;(preprocessor_deps (
-    ;  ppx_inline_test.libname
-    ;  ppx_expect
-    ;))
-    ;(preprocess (command "ppx-jane -inline-test-lib example_lib"))
-
-
-  ;-tag 'ppx(ppx-jane -as-ppx )' \
+(executables (
+  (names (inline_test_runner))
+  (libraries (
+    core
+    example_lib
   ))
+))
+
+;(alias (
+;  (name DEFAULT)
+;  (deps (inline_test_runner.exe))
+;  (run "./inline_test_runner.exe inline-test-runner example_lib")
+;))

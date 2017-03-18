@@ -38,7 +38,7 @@ You'll be prompted to install now. You can later run:
 $ opam install <package name>
 ```
 
-Or you can rebuild following a changew ith:
+Or you can rebuild following a change with:
 
 ```
 $ opam update <package name>
